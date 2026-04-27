@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlayerInputManager : MonoBehaviour
 {
@@ -9,17 +10,34 @@ public class PlayerInputManager : MonoBehaviour
     private BasePiece selectedPiece;
     private List<Tile> highlightedTiles = new List<Tile>();
 
-    void Update()
+    private InputAction clickAction;
+    private InputAction pointerPositionAction;
+
+    void Awake()
     {
-        if (Input.GetMouseButtonDown(0))
-        {
-            HandleClick();
-        }
+        clickAction = new InputAction(type: InputActionType.Button, binding: "<Pointer>/press");
+        pointerPositionAction = new InputAction(type: InputActionType.Value, binding: "<Pointer>/position");
+        pointerPositionAction.expectedControlType = "Vector2";
     }
 
-    private void HandleClick()
+    void OnEnable()
     {
-        Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        clickAction.Enable();
+        pointerPositionAction.Enable();
+        clickAction.performed += OnClick;
+    }
+
+    void OnDisable()
+    {
+        clickAction.Disable();
+        pointerPositionAction.Disable();
+        clickAction.performed -= OnClick;
+    }
+
+    private void OnClick(InputAction.CallbackContext context)
+    {
+        Vector2 screenPosition = pointerPositionAction.ReadValue<Vector2>();
+        Vector2 mousePosition = Camera.main.ScreenToWorldPoint(screenPosition);
         RaycastHit2D hit = Physics2D.Raycast(mousePosition, Vector2.zero);
 
         if (hit.collider != null)
