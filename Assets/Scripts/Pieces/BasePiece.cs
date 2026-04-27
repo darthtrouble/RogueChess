@@ -7,6 +7,7 @@ public enum PieceAffiliation
     Enemy
 }
 
+[RequireComponent(typeof(SpriteRenderer), typeof(BoxCollider2D))]
 public abstract class BasePiece : MonoBehaviour
 {
     [Header("Base Stats")]
