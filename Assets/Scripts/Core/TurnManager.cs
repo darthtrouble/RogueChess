@@ -35,25 +35,17 @@ public class TurnManager : MonoBehaviour
         }
     }
 
-    public void EndPlayerTurn()
+    public void EndTurn()
     {
         if (CurrentState == TurnState.PlayerTurn)
         {
             ChangeState(TurnState.EnemyTurn);
         }
-    }
-
-    public void EndEnemyTurn()
-    {
-        if (CurrentState == TurnState.EnemyTurn)
+        else if (CurrentState == TurnState.EnemyTurn)
         {
             ChangeState(TurnState.ResolutionPhase);
         }
-    }
-
-    public void EndResolutionPhase()
-    {
-        if (CurrentState == TurnState.ResolutionPhase)
+        else if (CurrentState == TurnState.ResolutionPhase)
         {
             ChangeState(TurnState.PlayerTurn);
         }

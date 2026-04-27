@@ -6,6 +6,7 @@ public class PlayerInputManager : MonoBehaviour
 {
     [Header("References")]
     public GridManager gridManager;
+    public TurnManager turnManager;
     
     private BasePiece selectedPiece;
     private List<Tile> highlightedTiles = new List<Tile>();
@@ -36,6 +37,11 @@ public class PlayerInputManager : MonoBehaviour
 
     private void OnClick(InputAction.CallbackContext context)
     {
+        if (turnManager == null || turnManager.CurrentState != TurnState.PlayerTurn)
+        {
+            return;
+        }
+
         Vector2 screenPosition = pointerPositionAction.ReadValue<Vector2>();
         Vector2 mousePosition = Camera.main.ScreenToWorldPoint(screenPosition);
         RaycastHit2D hit = Physics2D.Raycast(mousePosition, Vector2.zero);
@@ -48,7 +54,7 @@ public class PlayerInputManager : MonoBehaviour
             // If the player clicks a piece
             if (clickedPiece != null)
             {
-                if (clickedPiece.Affiliation == PieceAffiliation.Player)
+                if (clickedPiece.Team == Team.Player && turnManager.CurrentState == TurnState.PlayerTurn)
                 {
                     SelectPiece(clickedPiece);
                 }
@@ -114,10 +120,7 @@ public class PlayerInputManager : MonoBehaviour
         }
 
         // Handle capture if an enemy piece is on the target tile
-        if (targetTile.OccupyingPiece != null)
-        {
-            Destroy(targetTile.OccupyingPiece.gameObject);
-        }
+        selectedPiece.Capture(targetTile);
 
         // Update piece data
         selectedPiece.GridPosition = targetTile.GridPosition;
@@ -128,9 +131,10 @@ public class PlayerInputManager : MonoBehaviour
         ClearHighlights();
         selectedPiece = null;
 
-        // Note: You can optionally trigger TurnManager.EndPlayerTurn() here.
-        // var turnManager = FindObjectOfType<TurnManager>();
-        // if (turnManager != null) turnManager.EndPlayerTurn();
+        if (turnManager != null)
+        {
+            turnManager.EndTurn();
+        }
     }
 
     private void ClearHighlights()

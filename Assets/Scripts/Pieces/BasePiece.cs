@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum PieceAffiliation
+public enum Team
 {
     Player,
     Enemy
 }
 
-[RequireComponent(typeof(SpriteRenderer), typeof(BoxCollider2D))]
+[RequireComponent(typeof(SpriteRenderer), typeof(CircleCollider2D))]
 public abstract class BasePiece : MonoBehaviour
 {
     [Header("Base Stats")]
@@ -22,7 +22,7 @@ public abstract class BasePiece : MonoBehaviour
     public int movementRange;
 
     [Header("Positioning")]
-    public PieceAffiliation Affiliation;
+    public Team Team;
     public Vector2Int GridPosition { get; set; }
 
     protected List<PieceModifier> activeModifiers = new List<PieceModifier>();
@@ -31,6 +31,15 @@ public abstract class BasePiece : MonoBehaviour
     {
         currentHealth = baseMaxHealth;
         RecalculateStats();
+    }
+
+    protected virtual void Start()
+    {
+        SpriteRenderer sr = GetComponent<SpriteRenderer>();
+        if (sr != null)
+        {
+            sr.color = (Team == Team.Player) ? Color.blue : Color.red;
+        }
     }
 
     public void AddModifier(PieceModifier modifier)
@@ -64,6 +73,15 @@ public abstract class BasePiece : MonoBehaviour
         if (currentHealth > maxHealth)
         {
             currentHealth = maxHealth;
+        }
+    }
+
+    public virtual void Capture(Tile targetTile)
+    {
+        if (targetTile.OccupyingPiece != null)
+        {
+            Destroy(targetTile.OccupyingPiece.gameObject);
+            targetTile.OccupyingPiece = null;
         }
     }
 

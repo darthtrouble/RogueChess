@@ -1,6 +1,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[System.Serializable]
+public struct StartingPieceConfig
+{
+    public BasePiece prefab;
+    [Range(0, 7)] public int startX;
+    [Range(0, 7)] public int startY;
+    public Team Team;
+}
+
 public class GridManager : MonoBehaviour
 {
     [Header("Grid Settings")]
@@ -11,11 +20,15 @@ public class GridManager : MonoBehaviour
     [Header("Prefabs")]
     public Tile tilePrefab;
 
+    [Header("Initial Setup")]
+    public List<StartingPieceConfig> startingPieces = new List<StartingPieceConfig>();
+
     private Dictionary<Vector2Int, Tile> tiles;
 
     void Start()
     {
         GenerateGrid();
+        SpawnStartingPieces();
     }
 
     void GenerateGrid()
@@ -37,6 +50,32 @@ public class GridManager : MonoBehaviour
                 spawnedTile.Init(new Vector2Int(x, y), isLightSquare);
 
                 tiles[new Vector2Int(x, y)] = spawnedTile;
+            }
+        }
+    }
+
+    void SpawnStartingPieces()
+    {
+        if (startingPieces == null) return;
+
+        foreach (var config in startingPieces)
+        {
+            float spawnX = (config.startX - (width / 2f - 0.5f)) * tileSize;
+            float spawnY = (config.startY - (height / 2f - 0.5f)) * tileSize;
+            Vector3 spawnPosition = new Vector3(spawnX, spawnY, 0);
+
+            BasePiece spawnedPiece = Instantiate(config.prefab, spawnPosition, Quaternion.identity, transform);
+            spawnedPiece.Team = config.Team;
+            spawnedPiece.GridPosition = new Vector2Int(config.startX, config.startY);
+
+            Tile tile = GetTileAtPosition(spawnedPiece.GridPosition);
+            if (tile != null)
+            {
+                tile.OccupyingPiece = spawnedPiece;
+            }
+            else
+            {
+                Debug.LogWarning($"Trying to spawn piece at invalid tile {config.startX}, {config.startY}");
             }
         }
     }

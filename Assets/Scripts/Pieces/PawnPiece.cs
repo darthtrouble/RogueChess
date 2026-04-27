@@ -7,25 +7,35 @@ public class PawnPiece : BasePiece
     {
         List<Vector2Int> validMoves = new List<Vector2Int>();
         
-        // Simple forward movement
-        int direction = (Affiliation == PieceAffiliation.Player) ? 1 : -1;
+        int direction = (Team == Team.Player) ? 1 : -1;
         
-        for (int i = 1; i <= movementRange; i++)
+        // Forward movement (1 space if empty)
+        Vector2Int forwardPos = new Vector2Int(GridPosition.x, GridPosition.y + direction);
+        Tile forwardTile = grid.GetTileAtPosition(forwardPos);
+        if (forwardTile != null && forwardTile.OccupyingPiece == null)
         {
-            Vector2Int forwardPos = new Vector2Int(GridPosition.x, GridPosition.y + (direction * i));
-            
-            Tile tile = grid.GetTileAtPosition(forwardPos);
-            if (tile != null && tile.OccupyingPiece == null)
-            {
-                validMoves.Add(forwardPos);
-            }
-            else
-            {
-                break; // Blocked by another piece or the edge of the board
-            }
+            validMoves.Add(forwardPos);
         }
 
-        // Additional pawn behavior like diagonal capture can be implemented here
+        // Diagonal captures
+        Vector2Int[] diagonalPositions = new Vector2Int[]
+        {
+            new Vector2Int(GridPosition.x - 1, GridPosition.y + direction),
+            new Vector2Int(GridPosition.x + 1, GridPosition.y + direction)
+        };
+
+        foreach (var diagPos in diagonalPositions)
+        {
+            Tile diagTile = grid.GetTileAtPosition(diagPos);
+            if (diagTile != null && diagTile.OccupyingPiece != null)
+            {
+                // Can only capture enemies
+                if (diagTile.OccupyingPiece.Team != this.Team)
+                {
+                    validMoves.Add(diagPos);
+                }
+            }
+        }
         
         return validMoves;
     }
