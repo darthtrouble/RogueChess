@@ -31,7 +31,7 @@ public class GridManager : MonoBehaviour
                 Vector3 spawnPosition = new Vector3(spawnX, spawnY, 0);
 
                 var spawnedTile = Instantiate(tilePrefab, spawnPosition, Quaternion.identity, transform);
-                spawnedTile.name = $"Tile {x} {y}";
+                spawnedTile.name = $"{GetColumnName(x)}{y + 1}";
 
                 bool isLightSquare = (x + y) % 2 != 0;
                 spawnedTile.Init(new Vector2Int(x, y), isLightSquare);
@@ -39,6 +39,17 @@ public class GridManager : MonoBehaviour
                 tiles[new Vector2Int(x, y)] = spawnedTile;
             }
         }
+    }
+
+    private string GetColumnName(int index)
+    {
+        string columnName = "";
+        while (index >= 0)
+        {
+            columnName = (char)('a' + (index % 26)) + columnName;
+            index = (index / 26) - 1;
+        }
+        return columnName;
     }
 
     public Tile GetTileAtPosition(Vector2Int pos)
